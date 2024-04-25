@@ -3,7 +3,6 @@ package com.encantadaslash.javabackend.model;
 import com.encantadaslash.javabackend.beans.CalendarFactory;
 import com.encantadaslash.javabackend.exception.BusinessException;
 import com.encantadaslash.javabackend.util.DateTimeUtil;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Event;
@@ -12,26 +11,28 @@ import com.google.api.services.calendar.model.Events;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 @Component
 public class Calendario {
-    private DateTime dateTime;
+    public static final String CALENDAR_ID = "f6402d938e626ee512cace507d28acc8ee545f533bd5b25cbd1685fae38d99d3@group.calendar.google.com";
     private final Calendar service;
+    private DateTime dateTime;
     private List<Event> items;
 
     public Calendario() {
         this.service = CalendarFactory.INSTANCE();
     }
 
-    public Calendario listarEventos() {
+    public List<Event> listarEventos() {
         try {
             this.items = getEventsOfTheDay().getItems();
-            return this;
+            return this.items;
         } catch (Exception e) {
             e.printStackTrace();
-            return this;
         }
+        return Collections.emptyList();
     }
 
     private Events getEventsOfTheDay() throws IOException {
@@ -47,7 +48,7 @@ public class Calendario {
     }
 
     private Calendar.Events.List getPrimaryCalendarEvents() throws IOException {
-        return getEvents().list("f6402d938e626ee512cace507d28acc8ee545f533bd5b25cbd1685fae38d99d3@group.calendar.google.com");
+        return getEvents().list(CALENDAR_ID);
     }
 
     private Calendar.Events getEvents() {
@@ -72,7 +73,7 @@ public class Calendario {
         EventDateTime end = getEndEventDateTime();
         event.setStart(start);
         event.setEnd(end);
-        getEvents().insert("primary", event).execute();
+        getEvents().insert(CALENDAR_ID, event).execute();
 
         return event;
     }
@@ -85,14 +86,19 @@ public class Calendario {
         return new EventDateTime().setDateTime(dateTime).setTimeZone("America/Sao_Paulo");
     }
 
-    public DateTime getDateTime() { return dateTime; }
-
-    public List<Event> getItems() { return items; }
-
-    public void setItems(List<Event> items) { this.items = items; }
-
+    public DateTime getDateTime() {
+        return dateTime;
+    }
 
     public void setDateTime(DateTime dateTime) {
         this.dateTime = dateTime;
+    }
+
+    public List<Event> getItems() {
+        return items;
+    }
+
+    public void setItems(List<Event> items) {
+        this.items = items;
     }
 }
